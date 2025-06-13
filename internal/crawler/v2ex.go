@@ -2,6 +2,7 @@ package crawler
 
 import (
 	"net/http"
+	"net/url"
 	"strings"
 
 	"v2ex-tui/internal/model"
@@ -16,7 +17,20 @@ func New() *Crawler {
 }
 
 func (c *Crawler) FetchTopics() ([]model.Topic, error) {
-	resp, err := http.Get("https://www.v2ex.com/?tab=all")
+	proxyStr := "http://127.0.0.1:7890" // 替换为你的代理地
+	proxyURL, err := url.Parse(proxyStr)
+	if err != nil {
+		panic(err)
+	}
+
+	transport := &http.Transport{
+		Proxy: http.ProxyURL(proxyURL),
+	}
+
+	client := &http.Client{
+		Transport: transport,
+	}
+	resp, err := client.Get("https://www.v2ex.com/?tab=all")
 	if err != nil {
 		return nil, err
 	}
@@ -56,8 +70,22 @@ func (c *Crawler) FetchTopics() ([]model.Topic, error) {
 	return topics, nil
 }
 
-func (c *Crawler) FetchTopicDetail(url string) (*model.Topic, error) {
-	resp, err := http.Get(url)
+func (c *Crawler) FetchTopicDetail(detail_url string) (*model.Topic, error) {
+
+	proxyStr := "http://127.0.0.1:7890" // 替换为你的代理地
+	proxyURL, err := url.Parse(proxyStr)
+	if err != nil {
+		panic(err)
+	}
+
+	transport := &http.Transport{
+		Proxy: http.ProxyURL(proxyURL),
+	}
+
+	client := &http.Client{
+		Transport: transport,
+	}
+	resp, err := client.Get(detail_url)
 	if err != nil {
 		return nil, err
 	}
@@ -73,7 +101,7 @@ func (c *Crawler) FetchTopicDetail(url string) (*model.Topic, error) {
 		Author:  doc.Find(".header small a").First().Text(),
 		Time:    doc.Find(".header small span").First().AttrOr("title", ""),
 		Content: doc.Find(".topic_content").Text(),
-		URL:     url,
+		URL:     detail_url,
 	}
 
 	// 获取评论，并识别被回复的评论

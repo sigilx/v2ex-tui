@@ -40,12 +40,12 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		switch msg.String() {
 		case "q", "ctrl+c":
 			return m, tea.Quit
-		case "backspace", " ":
+		case "backspace", " ", "left":
 			if m.currentPage == detailView {
 				m.currentPage = homeView
 				return m, nil
 			}
-		case "enter":
+		case "enter", "right":
 			if m.currentPage == homeView {
 				if topic := m.homePage.GetSelectedTopic(); topic != nil {
 					m.currentPage = detailView
