@@ -93,10 +93,10 @@ func (d *DetailPage) Update(msg tea.Msg) (*DetailPage, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.String() {
-		case "up":
+		case "up", "k":
 			d.viewport.LineUp(10 * 2)
 			return d, nil
-		case "down":
+		case "down", "j":
 			d.viewport.LineDown(10 * 2)
 			return d, nil
 		case "f":
