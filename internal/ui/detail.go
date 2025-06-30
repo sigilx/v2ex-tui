@@ -187,7 +187,7 @@ func (d *DetailPage) View() string {
 	d.viewport.SetContent(content.String())
 
 	return d.viewport.View() + "\n" +
-		subtitleStyle.Render(IconBack+" 「空格」返回 | ↑↓ 滚动 ｜ f 复制链接 | q 退出 | "+IconMouse+" 支持鼠标操作(按 m 退出鼠标模式后可以选中文本)\n")
+		subtitleStyle.Render(IconBack+" 「空格」/<-/h 返回 | ↑↓/jk 滚动 ｜ f 复制链接 | q 退出")
 }
 
 func (d *DetailPage) wrapText(text string) string {

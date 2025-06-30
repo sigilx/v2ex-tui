@@ -182,7 +182,7 @@ func (h *HomePage) View() string {
 
 	return titleStyle.Render("V2EX 热门话题") + "\n" +
 		tableStyle.Render(h.table.View()) + "\n\n" +
-		subtitleStyle.Render(IconRefresh+" r 刷新 | ↑↓ 滚动 |"+IconEnter+" enter 查看详情 | "+IconMouse+" 支持鼠标操作 | q 退出\n")
+		subtitleStyle.Render(IconRefresh+" r 刷新 | ↑↓/jk 滚动 |"+IconEnter+" enter/l/→ 查看详情 | "+IconMouse+" 支持鼠标操作 | q 退出\n")
 }
 
 func (h *HomePage) GetSelectedTopic() *model.Topic {
