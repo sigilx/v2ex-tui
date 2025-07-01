@@ -94,10 +94,10 @@ func (d *DetailPage) Update(msg tea.Msg) (*DetailPage, tea.Cmd) {
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "up", "k":
-			d.viewport.LineUp(10 * 2)
+			d.viewport.LineUp(10 * 3)
 			return d, nil
 		case "down", "j":
-			d.viewport.LineDown(10 * 2)
+			d.viewport.LineDown(10 * 3)
 			return d, nil
 		case "f":
 			err := clipboard.WriteAll(d.Topic.URL)
