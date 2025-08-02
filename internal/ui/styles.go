@@ -53,3 +53,9 @@ var (
 	IconEnter    = "⏎ "
 	IconMouse    = "🐭 "
 )
+
+var (
+	StatusMessageStyle = lipgloss.NewStyle().
+				Foreground(lipgloss.Color("205")).
+				Bold(true)
+)

@@ -136,18 +136,31 @@ func (h *HomePage) Update(msg tea.Msg) (*HomePage, tea.Cmd) {
 		}
 		h.table.SetHeight(tableHeight)
 
-		// 动态计算标题列宽度
-		titleWidth := h.width - 15 - 10 - 20 - 10 // 减去其他列的宽度和边距
+		// 动态计算列宽度
+		authorWidth := int(float64(h.width) * 0.15)
+		commentsWidth := int(float64(h.width) * 0.1)
+		timeWidth := int(float64(h.width) * 0.15)
+		titleWidth := h.width - authorWidth - commentsWidth - timeWidth - 10 // 减去其他列的宽度和边距
+
 		if titleWidth < 20 {
 			titleWidth = 20
+		}
+		if authorWidth < 10 {
+			authorWidth = 10
+		}
+		if commentsWidth < 8 {
+			commentsWidth = 8
+		}
+		if timeWidth < 15 {
+			timeWidth = 15
 		}
 
 		// 更新列宽度
 		columns := []table.Column{
 			{Title: IconTitle + "话题", Width: titleWidth},
-			{Title: IconAuthor + "楼主", Width: 15},
-			{Title: IconComments + "评论数", Width: 10},
-			{Title: IconTime + "活跃时间", Width: 20},
+			{Title: IconAuthor + "楼主", Width: authorWidth},
+			{Title: IconComments + "评论数", Width: commentsWidth},
+			{Title: IconTime + "活跃时间", Width: timeWidth},
 		}
 		h.table.SetColumns(columns)
 		return h, nil

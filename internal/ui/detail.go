@@ -224,3 +224,10 @@ func (d *DetailPage) wrapText(text string) string {
 
 	return strings.Join(lines, "\n")
 }
+
+func (d *DetailPage) Reset() {
+	d.loading = true
+	d.err = nil
+	d.Topic = model.Topic{}
+	d.viewport.GotoTop()
+}

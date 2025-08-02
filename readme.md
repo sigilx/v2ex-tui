@@ -24,7 +24,7 @@
 
 1. 克隆这个仓库 or [下载该程序](https://github.com/kaolengmian7/v2ex-tui/releases)
 2. `cd path/to/v2ex-tui/bin`
-3. 运行 `./mac_v2ex_tui`
+3. 运行 `export HTTPS_PROXY=http://127.0.0.1:7890 && ./bin/v2ex-tui`
 4. 如果你有 golang 环境，也可以找到 main 文件运行 `go run main.go`
 
 ### 命令介绍

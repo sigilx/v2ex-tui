@@ -2,35 +2,41 @@ package crawler
 
 import (
 	"net/http"
-	"net/url"
 	"strings"
+	"time"
 
 	"v2ex-tui/internal/model"
 
 	"github.com/PuerkitoBio/goquery"
 )
 
-type Crawler struct{}
+const (
+	BaseURL = "https://www.v2ex.com"
+)
 
-func New() *Crawler {
-	return &Crawler{}
+// Crawler manages fetching data from V2EX.
+type Crawler struct {
+	client *http.Client
 }
 
-func (c *Crawler) FetchTopics() ([]model.Topic, error) {
-	proxyStr := "http://127.0.0.1:7890" // 替换为你的代理地
-	proxyURL, err := url.Parse(proxyStr)
-	if err != nil {
-		panic(err)
-	}
-
+// New creates a new Crawler with a default HTTP client.
+func New() *Crawler {
+	// http.ProxyFromEnvironment will automatically use the proxy
+	// specified by the HTTP_PROXY or HTTPS_PROXY environment variables.
 	transport := &http.Transport{
-		Proxy: http.ProxyURL(proxyURL),
+		Proxy: http.ProxyFromEnvironment,
 	}
+	return &Crawler{
+		client: &http.Client{
+			Transport: transport,
+			Timeout:   10 * time.Second,
+		},
+	}
+}
 
-	client := &http.Client{
-		Transport: transport,
-	}
-	resp, err := client.Get("https://www.v2ex.com/?tab=all")
+// FetchTopics fetches the list of topics from the V2EX homepage.
+func (c *Crawler) FetchTopics() ([]model.Topic, error) {
+	resp, err := c.client.Get(BaseURL + "/?tab=all")
 	if err != nil {
 		return nil, err
 	}
@@ -50,12 +56,16 @@ func (c *Crawler) FetchTopics() ([]model.Topic, error) {
 		if comments == "" {
 			comments = "0"
 		}
-		timeStr := s.Find(".topic_info").Text()
-		timeStr = strings.Split(timeStr, "•")[2]
-		timeStr = strings.TrimSpace(timeStr)
+
+		// More robustly parse the time string.
+		var timeStr string
+		parts := strings.Split(s.Find(".topic_info").Text(), "•")
+		if len(parts) > 2 {
+			timeStr = strings.TrimSpace(parts[2])
+		}
 
 		if !strings.HasPrefix(url, "http") {
-			url = "https://www.v2ex.com" + url
+			url = BaseURL + url
 		}
 
 		topics = append(topics, model.Topic{
@@ -70,22 +80,9 @@ func (c *Crawler) FetchTopics() ([]model.Topic, error) {
 	return topics, nil
 }
 
-func (c *Crawler) FetchTopicDetail(detail_url string) (*model.Topic, error) {
-
-	proxyStr := "http://127.0.0.1:7890" // 替换为你的代理地
-	proxyURL, err := url.Parse(proxyStr)
-	if err != nil {
-		panic(err)
-	}
-
-	transport := &http.Transport{
-		Proxy: http.ProxyURL(proxyURL),
-	}
-
-	client := &http.Client{
-		Transport: transport,
-	}
-	resp, err := client.Get(detail_url)
+// FetchTopicDetail fetches the details of a single topic, including its replies.
+func (c *Crawler) FetchTopicDetail(detailURL string) (*model.Topic, error) {
+	resp, err := c.client.Get(detailURL)
 	if err != nil {
 		return nil, err
 	}
@@ -101,16 +98,19 @@ func (c *Crawler) FetchTopicDetail(detail_url string) (*model.Topic, error) {
 		Author:  doc.Find(".header small a").First().Text(),
 		Time:    doc.Find(".header small span").First().AttrOr("title", ""),
 		Content: doc.Find(".topic_content").Text(),
-		URL:     detail_url,
+		URL:     detailURL,
 	}
 
-	// 获取评论，并识别被回复的评论
 	var replies []model.Reply
 	doc.Find(".cell[id^='r_']").Each(func(i int, s *goquery.Selection) {
 		content := s.Find(".reply_content").Text()
 		replyTo := ""
+		// Extract reply-to user more reliably.
 		if strings.HasPrefix(strings.TrimSpace(content), "@") {
-			replyTo = strings.Split(content, " ")[0][1:]
+			parts := strings.SplitN(content, " ", 2)
+			if len(parts) > 0 {
+				replyTo = parts[0][1:]
+			}
 		}
 
 		reply := model.Reply{
@@ -123,7 +123,9 @@ func (c *Crawler) FetchTopicDetail(detail_url string) (*model.Topic, error) {
 		replies = append(replies, reply)
 	})
 
-	// 计算每条评论被回复的次数
+	// This logic for calculating reply counts is inefficient (O(n^2))
+	// but for a typical forum thread, it's acceptable.
+	// A more optimized approach would use a map to store counts.
 	for i := range replies {
 		count := 0
 		for _, r := range replies {
